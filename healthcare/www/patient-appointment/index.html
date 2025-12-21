@@ -1,0 +1,119 @@
+{% extends "templates/web.html" %}
+{% block title %}Book Patient Appointment{% endblock %}
+
+{% block page_content %}
+<section class="patient-appointment-section py-5">
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-lg-7 col-md-9">
+				<div class="card shadow-sm">
+					<div class="card-body p-4">
+						<h2 class="h4 mb-4 text-center">Book an Appointment</h2>
+						<div id="patient-appointment-message" class="alert d-none" role="alert"></div>
+						<form id="patient-appointment-form" novalidate>
+							<div class="mb-3">
+								<label class="form-label">Full Name *</label>
+								<input type="text" class="form-control" name="patient_name" required>
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Mobile Number *</label>
+								<input type="tel" class="form-control" name="phone" pattern="[0-9+\- ]{6,}" required>
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Gender *</label>
+								<select class="form-select" name="gender" required>
+									<option value="">Select Gender</option>
+									{% for option in gender_options %}
+									<option value="{{ option }}">{{ option }}</option>
+									{% endfor %}
+								</select>
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Birth Date</label>
+								<input type="date" class="form-control" name="birth_date">
+							</div>
+							<div class="mb-3">
+								<label class="form-label">Choose Practitioner *</label>
+								<select class="form-select" name="practitioner" required>
+									<option value="">Select Practitioner</option>
+									{% for practitioner in practitioners %}
+									<option value="{{ practitioner.name }}">{{ practitioner.practitioner_name or practitioner.name }}</option>
+									{% endfor %}
+								</select>
+							</div>
+							<div class="row">
+								<div class="col-md-6 mb-3">
+									<label class="form-label">Preferred Date *</label>
+									<input type="date" class="form-control" name="appointment_date" required>
+								</div>
+								<div class="col-md-6 mb-3">
+									<label class="form-label">Preferred Time *</label>
+									<input type="time" class="form-control" name="appointment_time" required>
+								</div>
+							</div>
+							<div class="mb-4">
+								<label class="form-label">Describe Your Symptoms</label>
+								<textarea class="form-control" name="symptoms" rows="3" placeholder="Optional"></textarea>
+							</div>
+							<button type="submit" class="btn btn-primary w-100">Submit Appointment Request</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script>
+frappe.ready(function() {
+	const form = document.getElementById('patient-appointment-form');
+	const messageBox = document.getElementById('patient-appointment-message');
+	const submitButton = form.querySelector('button[type="submit"]');
+
+	const setMessage = (type, text) => {
+		messageBox.className = `alert alert-${type}`;
+		messageBox.textContent = text;
+		messageBox.classList.remove('d-none');
+	};
+
+	form.addEventListener('submit', function(event) {
+		event.preventDefault();
+		messageBox.classList.add('d-none');
+
+		if (!form.checkValidity()) {
+			form.reportValidity();
+			return;
+		}
+
+		submitButton.disabled = true;
+		submitButton.textContent = 'Submitting...';
+
+		const formData = new FormData(form);
+		const payload = Object.fromEntries(formData.entries());
+
+		frappe.call({
+			method: 'healthcare.api.patient_self_service.book_patient_appointment',
+			args: payload,
+			freeze: true,
+			freeze_message: 'Booking appointment...'
+		}).then(r => {
+			const response = r.message || {};
+			if (response.status === 'success') {
+				setMessage('success', 'Appointment booked successfully. Reference ID: ' + response.appointment_id);
+				form.reset();
+			} else {
+				setMessage('warning', 'Unable to book appointment. Please try again.');
+			}
+		}).catch(err => {
+			const error = (err && err.message) || 'Something went wrong. Please try again.';
+			setMessage('danger', error);
+		}).finally(() => {
+			submitButton.disabled = false;
+			submitButton.textContent = 'Submit Appointment Request';
+		});
+	});
+});
+</script>
+{% endblock %}

@@ -28,6 +28,7 @@ frappe.ui.form.on('Service Request', {
 		});
 
 		frm.trigger('setup_create_buttons');
+	frm.trigger('setup_invoice_button');
 	},
 
 
@@ -177,6 +178,35 @@ frappe.ui.form.on('Service Request', {
 						indicator: indicator,
 					});
 					frappe.set_route('Form', r.message[1], r.message[0]);
+				}
+			}
+		});
+	},
+
+	setup_invoice_button: function(frm) {
+		// Show invoice button only if:
+		// 1. Document is submitted
+		// 2. Has item_code
+		// 3. Billing status is not "Invoiced"
+		if (frm.doc.docstatus === 1 && frm.doc.item_code && frm.doc.billing_status !== "Invoiced") {
+			frm.add_custom_button(__('Sales Invoice'), function() {
+				frm.trigger('create_sales_invoice');
+			}, __('Create'));
+		}
+	},
+
+	create_sales_invoice: function(frm) {
+		frappe.call({
+			method: 'healthcare.healthcare.doctype.service_request.service_request.create_sales_invoice_from_service_request',
+			args: { service_request: frm.doc },
+			freeze: true,
+			callback: function(r) {
+				if (r.message && !r.exc) {
+					frappe.show_alert({
+						message: __('Sales Invoice {0} created and paid successfully', [r.message.sales_invoice]),
+						indicator: 'green'
+					});
+					frm.reload_doc();
 				}
 			}
 		});

@@ -1,0 +1,8 @@
+{
+  "doctype": "Page",
+  "name": "customer-ledger-statement",
+  "module": "Healthcare",
+  "title": "كشف حساب العميل",
+  "standard": 1,
+  "role": "Accounts User"
+}

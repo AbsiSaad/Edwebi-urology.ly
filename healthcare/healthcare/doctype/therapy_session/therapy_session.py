@@ -16,6 +16,7 @@ from healthcare.healthcare.doctype.healthcare_settings.healthcare_settings impor
 	get_receivable_account,
 )
 from healthcare.healthcare.doctype.nursing_task.nursing_task import NursingTask
+from healthcare.healthcare.doctype.patient.patient import create_customer
 from healthcare.healthcare.doctype.service_request.service_request import (
 	update_service_request_status,
 )
@@ -47,6 +48,9 @@ class TherapySession(Document):
 			frappe.db.set_value("Service Request", self.service_request, "status", "active-Request Status")
 
 		self.update_sessions_count_in_therapy_plan(on_cancel=True)
+		# Reverse doctor commission entry
+		from healthcare.healthcare.scripts.therapy_commission import on_therapy_session_cancel
+		on_therapy_session_cancel(self, None)
 
 	def validate_duplicate(self):
 		end_time = datetime.datetime.combine(
@@ -93,6 +97,32 @@ class TherapySession(Document):
 			frappe.db.set_value(
 				"Service Request", self.service_request, "status", "completed-Request Status"
 			)
+		
+		# Automatically create Sales Invoice if conditions are met
+		if not self.invoiced and self.rate and self.therapy_type:
+			# Check if therapy plan has template (those are invoiced separately)
+			therapy_plan_has_template = False
+			if self.therapy_plan:
+				therapy_plan_has_template = frappe.db.get_value(
+					"Therapy Plan", self.therapy_plan, "therapy_plan_template"
+				)
+			
+			# Only auto-invoice if not from therapy plan template
+			if not therapy_plan_has_template:
+				# Check if service request is already invoiced
+				service_request_invoiced = False
+				if self.service_request:
+					service_request_invoiced = frappe.db.get_value(
+						"Service Request", self.service_request, "billing_status"
+					) == "Invoiced"
+				
+				# Only auto-invoice if not from service request or service request is not invoiced
+				if not self.service_request or not service_request_invoiced:
+					_create_sales_invoice(self)
+		
+		# Create doctor commission entry
+		from healthcare.healthcare.scripts.therapy_commission import on_therapy_session_submit
+		on_therapy_session_submit(self, None)
 
 	def create_nursing_tasks(self, post_event=True):
 		template = frappe.db.get_value("Therapy Type", self.therapy_type, "nursing_checklist_template")
@@ -217,6 +247,94 @@ def invoice_therapy_session(source_name, target_doc=None):
 	)
 
 	return doc
+
+
+@frappe.whitelist()
+def create_sales_invoice(therapy_session):
+	"""Create and submit Sales Invoice for Therapy Session automatically"""
+	if isinstance(therapy_session, str):
+		therapy_session_doc = frappe.get_doc("Therapy Session", therapy_session)
+	else:
+		therapy_session_doc = therapy_session
+	
+	_create_sales_invoice(therapy_session_doc)
+
+
+def _create_sales_invoice(therapy_session_doc):
+	"""Internal function to create and submit Sales Invoice for Therapy Session"""
+	sales_invoice = frappe.new_doc("Sales Invoice")
+	patient_doc = frappe.get_doc("Patient", therapy_session_doc.patient)
+
+	if not patient_doc.customer:
+		create_customer(patient_doc)
+		patient_doc.reload()
+
+	if not patient_doc.customer:
+		frappe.throw(
+			_("Customer could not be found or created for patient {0}.").format(
+				frappe.bold(therapy_session_doc.patient_name or therapy_session_doc.patient)
+			),
+			title=_("Customer Missing"),
+		)
+
+	sales_invoice.patient = therapy_session_doc.patient
+	sales_invoice.customer = patient_doc.customer
+	sales_invoice.due_date = getdate()
+	sales_invoice.company = therapy_session_doc.company
+	sales_invoice.debit_to = get_receivable_account(therapy_session_doc.company)
+
+	item = sales_invoice.append("items", {})
+	item = get_therapy_item(therapy_session_doc, item)
+
+	# Get payment information - check linked appointment first, then get default
+	mode_of_payment = None
+	paid_amount = flt(therapy_session_doc.rate)
+	
+	if therapy_session_doc.appointment:
+		appointment_doc = frappe.get_doc("Patient Appointment", therapy_session_doc.appointment)
+		if appointment_doc.mode_of_payment and appointment_doc.paid_amount:
+			mode_of_payment = appointment_doc.mode_of_payment
+			paid_amount = flt(appointment_doc.paid_amount)
+	
+	# If no mode of payment from appointment, get a default one
+	if not mode_of_payment:
+		# Get first enabled mode of payment
+		mode_of_payment = frappe.db.get_value(
+			"Mode of Payment",
+			{"enabled": 1},
+			"name",
+			order_by="creation asc"
+		)
+		
+		# If still no mode of payment, get any mode of payment
+		if not mode_of_payment:
+			mode_of_payment = frappe.db.get_value(
+				"Mode of Payment",
+				{},
+				"name",
+				order_by="creation asc"
+			)
+
+	# Always create as paid invoice if we have a mode of payment and amount
+	if mode_of_payment and paid_amount:
+		sales_invoice.is_pos = 1
+		payment = sales_invoice.append("payments", {})
+		payment.mode_of_payment = mode_of_payment
+		payment.amount = paid_amount
+
+	sales_invoice.set_missing_values(for_validate=True)
+	sales_invoice.flags.ignore_mandatory = True
+	sales_invoice.save(ignore_permissions=True)
+	sales_invoice.submit()
+	frappe.msgprint(_("Sales Invoice {0} created").format(sales_invoice.name), alert=True)
+	frappe.db.set_value(
+		"Therapy Session",
+		therapy_session_doc.name,
+		{
+			"invoiced": 1,
+		},
+	)
+	therapy_session_doc.notify_update()
 
 
 def get_therapy_item(therapy, item):

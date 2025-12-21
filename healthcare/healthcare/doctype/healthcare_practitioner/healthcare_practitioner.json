@@ -26,6 +26,7 @@
   "employee",
   "supplier",
   "department",
+  "company",
   "designation",
   "column_break_17",
   "user_id",
@@ -39,6 +40,20 @@
   "column_break_18",
   "inpatient_visit_charge_item",
   "inpatient_visit_charge",
+  "commission_section",
+  "default_commission_percentage",
+  "column_break_commission",
+  "encounter_commission_percentage",
+  "lab_commission_percentage",
+  "procedure_commission_percentage",
+  "therapy_commission_percentage",
+  "commission_configuration_section",
+  "commission_basis",
+  "commission_cap_amount",
+  "minimum_commission_amount",
+  "auto_wallet_entry",
+  "commission_rules",
+  "commission_notes",
   "account_details",
   "default_currency",
   "accounts",
@@ -116,6 +131,13 @@
    "options": "Medical Department"
   },
   {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "in_standard_filter": 1
+  },
+  {
    "fieldname": "column_break_7",
    "fieldtype": "Column Break"
   },
@@ -187,6 +209,100 @@
    "fieldtype": "Currency",
    "label": "Inpatient Visit Charge",
    "mandatory_depends_on": "inpatient_visit_charge_item"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "commission_section",
+   "fieldtype": "Section Break",
+   "label": "Commission Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "default_commission_percentage",
+   "fieldtype": "Float",
+   "label": "Default Commission Percentage",
+   "precision": "2",
+   "description": "Default commission percentage for all services. Can be overridden per service type."
+  },
+  {
+   "fieldname": "column_break_commission",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "encounter_commission_percentage",
+   "fieldtype": "Float",
+   "label": "Encounter Commission %",
+   "precision": "2",
+   "description": "Commission percentage for Patient Encounters. If not set, default commission will be used."
+  },
+  {
+   "default": "0",
+   "fieldname": "lab_commission_percentage",
+   "fieldtype": "Float",
+   "label": "Lab Test Commission %",
+   "precision": "2",
+   "description": "Commission percentage for Lab Tests. If not set, default commission will be used."
+  },
+  {
+   "default": "0",
+   "fieldname": "procedure_commission_percentage",
+   "fieldtype": "Float",
+   "label": "Procedure Commission %",
+   "precision": "2",
+   "description": "Commission percentage for Clinical Procedures. If not set, default commission will be used."
+  },
+  {
+   "default": "0",
+   "fieldname": "therapy_commission_percentage",
+   "fieldtype": "Float",
+   "label": "Therapy Commission %",
+   "precision": "2",
+   "description": "Commission percentage for Therapy Sessions. If not set, default commission will be used."
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "commission_configuration_section",
+   "fieldtype": "Section Break",
+   "label": "Commission Configuration"
+  },
+  {
+   "default": "Percentage of Service",
+   "fieldname": "commission_basis",
+   "fieldtype": "Select",
+   "label": "Default Commission Basis",
+   "options": "Percentage of Service\nFlat Amount\nRule Table Only",
+   "description": "Determines how commission is calculated when no rule is matched."
+  },
+  {
+   "fieldname": "commission_cap_amount",
+   "fieldtype": "Currency",
+   "label": "Commission Cap Amount",
+   "description": "Maximum commission amount per service."
+  },
+  {
+   "fieldname": "minimum_commission_amount",
+   "fieldtype": "Currency",
+   "label": "Minimum Commission Amount",
+   "description": "Lower limit for a single commission payout."
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_wallet_entry",
+   "fieldtype": "Check",
+   "label": "Auto-create Doctor Wallet Entries",
+   "description": "Create Doctor Wallet entries automatically when relevant healthcare documents are submitted."
+  },
+  {
+   "fieldname": "commission_rules",
+   "fieldtype": "Table",
+   "label": "Commission Rules",
+   "options": "Healthcare Practitioner Commission Rule"
+  },
+  {
+   "fieldname": "commission_notes",
+   "fieldtype": "Small Text",
+   "label": "Commission Notes"
   },
   {
    "depends_on": "eval: !doc.__islocal",

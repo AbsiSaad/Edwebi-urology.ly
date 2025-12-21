@@ -153,6 +153,30 @@ frappe.ui.form.on('Patient Appointment', {
 				}
 			});
         }
+
+		// Add quick Return / Credit Note button if invoice exists
+		if (!frm.is_new() && frm.doc.invoiced && frm.doc.ref_sales_invoice && frm.doc.status != "Cancelled") {
+			frm.add_custom_button(__("Return (Credit Note)"), function () {
+				frappe.confirm(
+					__('Are you sure you want to create a Return (Credit Note) and cancel the linked Sales Invoice?'),
+					function() {
+						frappe.call({
+							method: "healthcare.healthcare.doctype.patient_appointment.patient_appointment.return_sales_invoice",
+							args: {
+								appointment_name: frm.doc.name
+							},
+							freeze: true,
+							freeze_message: __('Processing return and updating doctor wallet...'),
+							callback: function(r) {
+								if (!r.exc) {
+									frm.reload_doc();
+								}
+							}
+						});
+					}
+				);
+			}, __("Invoice"));
+		}
 	},
 
 	appointment_for: function(frm) {

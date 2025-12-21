@@ -1,0 +1,66 @@
+DocType,Field1,Field2,Field3,Field4,Field5,Field6,Field7,Field8,Notes
+Medical Department,Department Name,Patient Care Type,,,,,,,Required: Department Name
+Medical Department,Cardiology,Outpatient,,,,,,,Example
+Medical Department,Orthopedics,Outpatient,,,,,,,Example
+Medical Department,Pediatrics,Outpatient,,,,,,,Example
+Medical Department,General Medicine,Outpatient,,,,,,,Example
+Medical Department,Surgery,Outpatient,,,,,,,Example
+,,,,,,,,
+Healthcare Practitioner,Practitioner Name,Practitioner Type,Medical Department,Designation,Mobile No,Email ID,OP Consulting Charge,Inpatient Visit Charge,Required: Name, Type, Department
+Healthcare Practitioner,Dr. Ahmed Ali,Internal,Cardiology,Consultant,0123456789,ahmed@hospital.com,100,200,Example
+Healthcare Practitioner,Dr. Sara Mohamed,Internal,Orthopedics,Specialist,0123456790,sara@hospital.com,150,250,Example
+,,,,,,,,
+Appointment Type,Appointment Type,Default Duration (Minutes),Allow Booking For,Color,Price List,,,,Required: Type, Duration, Allow Booking For
+Appointment Type,General Consultation,30,Practitioner,#4285F4,Standard Selling,,,,Example
+Appointment Type,Follow-up,15,Practitioner,#34A853,Standard Selling,,,,Example
+Appointment Type,Emergency,60,Practitioner,#EA4335,Standard Selling,,,,Example
+,,,,,,,,
+Healthcare Service Unit Type,Service Unit Type,Allow Appointments,Overlap Appointments,Service Unit Capacity,Is Billable,Item Code,Rate,Description,Required: Service Unit Type
+Healthcare Service Unit Type,OPD Room,Yes,No,1,Yes,OPD-ROOM-001,50,Outpatient Department Room,Example
+Healthcare Service Unit Type,Ward,No,No,10,Yes,WARD-001,100,Hospital Ward,Example
+Healthcare Service Unit Type,ICU,No,No,5,Yes,ICU-001,500,Intensive Care Unit,Example
+,,,,,,,,
+Healthcare Service Unit,Service Unit,Service Unit Type,Company,Is Group,Allow Appointments,Overlap Appointments,Warehouse,Parent Service Unit,Required: Service Unit, Service Unit Type, Company
+Healthcare Service Unit,OPD Room 1,OPD Room,Your Company,No,Yes,No,Stores - YC,,Example
+Healthcare Service Unit,OPD Room 2,OPD Room,Your Company,No,Yes,No,Stores - YC,,Example
+Healthcare Service Unit,Ward A,Ward,Your Company,No,No,No,Stores - YC,,Example
+,,,,,,,,
+Practitioner Schedule,Schedule Name,Practitioner,Day,From Time,To Time,Allow Video Conferencing,,,,Required: Schedule Name, Practitioner, Day, From Time, To Time
+Practitioner Schedule,Dr. Ahmed - Weekdays,Dr. Ahmed Ali,Sunday,09:00:00,17:00:00,Yes,,,Example
+Practitioner Schedule,Dr. Ahmed - Weekdays,Dr. Ahmed Ali,Monday,09:00:00,17:00:00,Yes,,,Example
+Practitioner Schedule,Dr. Ahmed - Weekdays,Dr. Ahmed Ali,Tuesday,09:00:00,17:00:00,Yes,,,Example
+Practitioner Schedule,Dr. Ahmed - Weekdays,Dr. Ahmed Ali,Wednesday,09:00:00,17:00:00,Yes,,,Example
+Practitioner Schedule,Dr. Ahmed - Weekdays,Dr. Ahmed Ali,Thursday,09:00:00,17:00:00,Yes,,,Example
+,,,,,,,,
+Lab Test Template,Lab Test Name,Lab Test Group,Department,Sample,Sample UOM,Test Type,Is Billable,Item Code,Required: Lab Test Name, Department, Sample
+Lab Test Template,Complete Blood Count (CBC),Hematology,Pathology,Blood,mL,Single,Yes,CBC-001,Example
+Lab Test Template,Blood Glucose,Biochemistry,Pathology,Blood,mL,Single,Yes,GLU-001,Example
+Lab Test Template,Urine Analysis,Urine,Pathology,Urine,mL,Single,Yes,UA-001,Example
+,,,,,,,,
+Medication,Generic Name,Medication Class,Strength,Strength UOM,Dosage Form,Is Combination,Item Code,Default Prescription Dosage,Required: Generic Name, Medication Class, Strength, Strength UOM, Dosage Form
+Medication,Paracetamol,Analgesics,500,mg,Tablet,No,PARA-500,1-1-1,Example
+Medication,Amoxicillin,Antibiotics,500,mg,Capsule,No,AMOX-500,1-1-1,Example
+Medication,Ibuprofen,Analgesics,400,mg,Tablet,No,IBU-400,1-0-1,Example
+,,,,,,,,
+Clinical Procedure Template,Procedure Template,Medical Department,Item Code,Is Billable,Consume Stock,Warehouse,Estimated Duration (Minutes),Description,Required: Procedure Template, Medical Department
+Clinical Procedure Template,X-Ray Chest,Radiology,XRAY-CHEST,Yes,No,,15,Chest X-Ray,Example
+Clinical Procedure Template,ECG,Cardiology,ECG-001,Yes,No,,10,Electrocardiogram,Example
+Clinical Procedure Template,Ultrasound Abdomen,Radiology,US-ABD,Yes,No,,30,Abdominal Ultrasound,Example
+,,,,,,,,
+Therapy Type,Therapy Type,Medical Department,Is Billable,Rate,Default Duration (Minutes),Item Code,Healthcare Service Unit,Description,Required: Therapy Type, Medical Department
+Therapy Type,Physiotherapy,Orthopedics,Yes,200,60,PHYSIO-001,OPD Room 1,Physical Therapy,Example
+Therapy Type,Occupational Therapy,Orthopedics,Yes,150,45,OCC-001,OPD Room 1,Occupational Therapy,Example
+,,,,,,,,
+Diagnosis,Diagnosis,Medical Coding,,,,,,,Required: Diagnosis
+Diagnosis,Hypertension,,,,,,,Example
+Diagnosis,Diabetes Mellitus Type 2,,,,,,,Example
+Diagnosis,Upper Respiratory Tract Infection,,,,,,,Example
+Diagnosis,Acute Gastroenteritis,,,,,,,Example
+,,,,,,,,
+Complaint,Complaint,,,,,,,Required: Complaint
+Complaint,Fever,,,,,,,Example
+Complaint,Headache,,,,,,,Example
+Complaint,Cough,,,,,,,Example
+Complaint,Chest Pain,,,,,,,Example
+Complaint,Abdominal Pain,,,,,,,Example
+

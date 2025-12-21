@@ -9,6 +9,7 @@ import json
 import frappe
 from frappe import _
 from frappe.core.doctype.sms_settings.sms_settings import send_sms
+from frappe.exceptions import TimestampMismatchError
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, format_date, get_link_to_form, get_time, getdate
@@ -24,6 +25,7 @@ from healthcare.healthcare.doctype.healthcare_settings.healthcare_settings impor
 	get_income_account,
 	get_receivable_account,
 )
+from healthcare.healthcare.doctype.patient.patient import create_customer
 from healthcare.healthcare.utils import get_appointment_billing_item_and_rate
 
 
@@ -432,8 +434,22 @@ def invoice_appointment(appointment_name, discount_percentage=0, discount_amount
 
 def create_sales_invoice(appointment_doc, discount_percentage=0, discount_amount=0):
 	sales_invoice = frappe.new_doc("Sales Invoice")
+	patient_doc = frappe.get_doc("Patient", appointment_doc.patient)
+
+	if not patient_doc.customer:
+		create_customer(patient_doc)
+		patient_doc.reload()
+
+	if not patient_doc.customer:
+		frappe.throw(
+			_("Customer could not be found or created for patient {0}.").format(
+				frappe.bold(appointment_doc.patient_name or appointment_doc.patient)
+			),
+			title=_("Customer Missing"),
+		)
+
 	sales_invoice.patient = appointment_doc.patient
-	sales_invoice.customer = frappe.get_value("Patient", appointment_doc.patient, "customer")
+	sales_invoice.customer = patient_doc.customer
 	sales_invoice.appointment = appointment_doc.name
 	sales_invoice.due_date = getdate()
 	sales_invoice.company = appointment_doc.company
@@ -475,6 +491,75 @@ def create_sales_invoice(appointment_doc, discount_percentage=0, discount_amount
 		},
 	)
 	appointment_doc.notify_update()
+
+
+@frappe.whitelist()
+def return_sales_invoice(appointment_name):
+	"""Create a return (credit note) for the appointment's Sales Invoice and cancel the original.
+
+	This will also trigger automatic Doctor Wallet reversal via Sales Invoice cancel hooks.
+	"""
+	appointment_doc = frappe.get_doc("Patient Appointment", appointment_name)
+
+	if not appointment_doc.ref_sales_invoice:
+		frappe.throw(_("No Sales Invoice is linked to this appointment."), title=_("No Invoice"))
+
+	sales_invoice = frappe.get_doc("Sales Invoice", appointment_doc.ref_sales_invoice)
+
+	if sales_invoice.is_return:
+		frappe.throw(
+			_("Sales Invoice {0} is already a return document.").format(sales_invoice.name),
+			title=_("Already Returned"),
+		)
+
+	from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_sales_return
+
+	return_si = make_sales_return(sales_invoice.name)
+	return_si.flags.ignore_permissions = True
+	# Clear healthcare reference fields so return does not re-mark the appointment as invoiced
+	for item in return_si.items:
+		if getattr(item, "reference_dt", None) == "Patient Appointment" and getattr(
+			item, "reference_dn", None
+		) == appointment_doc.name:
+			item.reference_dt = None
+			item.reference_dn = None
+
+	return_si.save()
+	return_si.submit()
+
+	# Cancel original invoice, which will also reverse any Doctor Wallet entries
+	# Retry mechanism to handle potential timestamp mismatches
+	max_retries = 3
+	for attempt in range(max_retries):
+		try:
+			# Reload original invoice just before cancelling to avoid timestamp mismatch
+			sales_invoice = frappe.get_doc("Sales Invoice", sales_invoice.name, for_update=True)
+			# Allow cancellation even though the return is linked via amended_from/return_against
+			sales_invoice.flags.ignore_links = True
+			# Synchronize internal timestamp tracking to prevent mismatch error
+			# Clear _doc_before_save so check_if_latest() will reload it fresh
+			sales_invoice._doc_before_save = None
+			sales_invoice._original_modified = sales_invoice.modified
+			sales_invoice.cancel()
+			break
+		except TimestampMismatchError:
+			if attempt < max_retries - 1:
+				# Wait a tiny bit and retry
+				import time
+				time.sleep(0.1)
+				continue
+			else:
+				# Last attempt failed, re-raise
+				raise
+
+	frappe.msgprint(
+		_("Return Sales Invoice {0} created and {1} cancelled.").format(
+			return_si.name, sales_invoice.name
+		),
+		alert=True,
+	)
+
+	return {"return_invoice": return_si.name, "cancelled_invoice": sales_invoice.name}
 
 
 @frappe.whitelist()

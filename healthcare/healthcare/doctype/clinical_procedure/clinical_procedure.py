@@ -54,6 +54,9 @@ class ClinicalProcedure(Document):
 	def on_cancel(self):
 		if self.service_request:
 			frappe.db.set_value("Service Request", self.service_request, "status", "active-Request Status")
+		# Reverse doctor commission entry
+		from healthcare.healthcare.scripts.procedure_commission import on_clinical_procedure_cancel
+		on_clinical_procedure_cancel(self, None)
 
 	def after_insert(self):
 		if self.service_request:
@@ -75,6 +78,9 @@ class ClinicalProcedure(Document):
 
 	def on_submit(self):
 		self.create_nursing_tasks(post_event=False)
+		# Create doctor commission entry
+		from healthcare.healthcare.scripts.procedure_commission import on_clinical_procedure_submit
+		on_clinical_procedure_submit(self, None)
 
 	def create_nursing_tasks(self, post_event=True):
 		if post_event:

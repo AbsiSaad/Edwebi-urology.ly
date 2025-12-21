@@ -539,6 +539,10 @@ def manage_invoice_validate(doc, method):
 
 
 def manage_invoice_submit_cancel(doc, method):
+	# Skip healthcare invoice flags for return / credit note documents
+	if getattr(doc, "is_return", 0):
+		return
+
 	if not doc.patient:
 		return
 
@@ -584,6 +588,14 @@ def manage_invoice_submit_cancel(doc, method):
 							"ref_sales_invoice": None,
 						},
 					)
+	
+	# Handle doctor commission/wallet entries
+	if method == "on_submit":
+		from healthcare.healthcare.scripts.sales_invoice_commission import on_sales_invoice_submit
+		on_sales_invoice_submit(doc, method)
+	elif method == "on_cancel":
+		from healthcare.healthcare.scripts.sales_invoice_commission import on_sales_invoice_cancel
+		on_sales_invoice_cancel(doc, method)
 
 
 def set_invoiced(item, method, ref_invoice=None):

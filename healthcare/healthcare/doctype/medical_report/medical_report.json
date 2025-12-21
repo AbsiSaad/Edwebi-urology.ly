@@ -1,0 +1,331 @@
+{
+ "actions": [],
+ "allow_copy": 1,
+ "allow_import": 1,
+ "autoname": "naming_series:",
+ "creation": "2025-01-27 10:00:00.000000",
+ "doctype": "DocType",
+ "document_type": "Document",
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "sb_patient_info",
+  "patient",
+  "patient_name",
+  "gender",
+  "age",
+  "file_number",
+  "visit_encounter",
+  "column_break_1",
+  "report_date",
+  "status",
+  "sb_medical_details",
+  "diagnosis",
+  "signs_symptoms",
+  "medical_findings",
+  "procedure_treatment",
+  "sb_dates",
+  "sick_leave_from",
+  "sick_leave_to",
+  "return_to_work_date",
+  "duration",
+  "column_break_2",
+  "sb_report_destination",
+  "report_requested_for",
+  "organization_name",
+  "sb_report_content",
+  "report_summary",
+  "recommendations",
+  "sb_doctor_info",
+  "doctor",
+  "doctor_name",
+  "license_number",
+  "column_break_3",
+  "digital_signature",
+  "official_stamp",
+  "workflow_state"
+],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Series",
+   "no_copy": 1,
+   "options": "MR-.YYYY.-",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "sb_patient_info",
+   "fieldtype": "Section Break",
+   "label": "Patient Information / بيانات المريض"
+  },
+  {
+   "fieldname": "patient",
+   "fieldtype": "Link",
+   "ignore_user_permissions": 1,
+   "in_standard_filter": 1,
+   "label": "Patient / المريض",
+   "options": "Patient",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "patient_name",
+   "fieldtype": "Data",
+   "label": "Patient Name / اسم المريض",
+   "read_only": 1
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Link",
+   "label": "Gender / الجنس",
+   "options": "Gender",
+   "read_only": 1
+  },
+  {
+   "fieldname": "age",
+   "fieldtype": "Data",
+   "label": "Age / العمر",
+   "read_only": 1
+  },
+  {
+   "fieldname": "file_number",
+   "fieldtype": "Data",
+   "label": "File Number / Patient ID / رقم الملف",
+   "read_only": 1
+  },
+  {
+   "fieldname": "visit_encounter",
+   "fieldtype": "Link",
+   "label": "Visit / Encounter / الزيارة",
+   "options": "Patient Encounter"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "report_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Report Date / تاريخ التقرير",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status / الحالة",
+   "options": "Draft\nWaiting for Doctor Approval\nApproved\nRejected",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_medical_details",
+   "fieldtype": "Section Break",
+   "label": "Medical Details / تفاصيل الحالة الطبية"
+  },
+  {
+   "fieldname": "diagnosis",
+   "fieldtype": "Text Editor",
+   "ignore_xss_filter": 1,
+   "label": "Diagnosis / التشخيص",
+   "reqd": 1
+  },
+  {
+   "fieldname": "medical_findings",
+   "fieldtype": "Text Editor",
+   "ignore_xss_filter": 1,
+   "label": "Medical Findings / النتائج الطبية"
+  },
+  {
+   "fieldname": "procedure_treatment",
+   "fieldtype": "Text Editor",
+   "ignore_xss_filter": 1,
+   "label": "Procedure / Treatment / الإجراء / العلاج"
+  },
+  {
+   "fieldname": "sb_dates",
+   "fieldtype": "Section Break",
+   "label": "Sick Leave Dates / تواريخ الإجازة المرضية"
+  },
+  {
+   "fieldname": "sick_leave_from",
+   "fieldtype": "Date",
+   "label": "Sick Leave From / إجازة مرضية من"
+  },
+  {
+   "fieldname": "sick_leave_to",
+   "fieldtype": "Date",
+   "label": "Sick Leave To / إلى",
+   "depends_on": "eval:doc.sick_leave_from"
+  },
+  {
+   "fieldname": "return_to_work_date",
+   "fieldtype": "Date",
+   "label": "Return to Work Date / تاريخ العودة للعمل"
+  },
+  {
+   "fieldname": "duration",
+   "fieldtype": "Data",
+   "label": "Duration (Days) / المدة (أيام)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sb_report_destination",
+   "fieldtype": "Section Break",
+   "label": "Report Destination / جهة التقرير"
+  },
+  {
+   "fieldname": "report_requested_for",
+   "fieldtype": "Select",
+   "label": "Report Requested For / الجهة المقدّم لها التقرير",
+   "options": "\nWork / جهة العمل\nHealth Insurance / التأمين الصحي\nSick Leave / إجازة مرضية\nTravel / سفر\nSchool / University / مدرسة / جامعة\nOther / أخرى"
+  },
+  {
+   "fieldname": "organization_name",
+   "fieldtype": "Data",
+   "label": "Organization Name / اسم الجهة",
+   "depends_on": "eval:doc.report_requested_for"
+  },
+  {
+   "fieldname": "sb_report_content",
+   "fieldtype": "Section Break",
+   "label": "Report Content / نص التقرير"
+  },
+  {
+   "fieldname": "report_summary",
+   "fieldtype": "Text Editor",
+   "ignore_xss_filter": 1,
+   "label": "Report Summary / ملخص التقرير",
+   "reqd": 1
+  },
+  {
+   "fieldname": "recommendations",
+   "fieldtype": "Text Editor",
+   "ignore_xss_filter": 1,
+   "label": "Recommendations / التوصيات"
+  },
+  {
+   "fieldname": "sb_doctor_info",
+   "fieldtype": "Section Break",
+   "label": "Doctor Information / بيانات الطبيب"
+  },
+  {
+   "fieldname": "doctor",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Doctor / الطبيب",
+   "options": "Healthcare Practitioner",
+   "reqd": 1
+  },
+  {
+   "fieldname": "doctor_name",
+   "fieldtype": "Data",
+   "label": "Doctor Name / اسم الطبيب",
+   "read_only": 1
+  },
+  {
+   "fieldname": "license_number",
+   "fieldtype": "Data",
+   "label": "License Number / رقم مزاولة المهنة"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "digital_signature",
+   "fieldtype": "Attach Image",
+   "label": "Digital Signature / التوقيع الرقمي"
+  },
+  {
+   "fieldname": "official_stamp",
+   "fieldtype": "Attach Image",
+   "label": "Official Stamp / الختم الرسمي"
+  },
+  {
+    "fieldname": "signs_symptoms",
+    "fieldtype": "Small Text",
+    "label": "Signs & Symptoms / الأعراض",
+    "hidden": 1,
+    "read_only": 1
+  },
+  
+  {
+   "fieldname": "workflow_state",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Workflow State",
+   "no_copy": 1,
+   "options": "Workflow State",
+   "read_only": 1
+  }
+ ],
+ "idx": 0,
+ "links": [
+  {
+   "group": "Medical Records",
+   "link_doctype": "Patient Medical Record",
+   "link_fieldname": "reference_name"
+  }
+ ],
+ "modified": "2025-01-27 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Medical Report",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Physician",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Healthcare Administrator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "restrict_to_domain": "Healthcare",
+ "row_format": "Dynamic",
+ "search_fields": "patient, patient_name, doctor, doctor_name, report_date",
+ "show_name_in_global_search": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
+
+

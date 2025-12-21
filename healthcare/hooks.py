@@ -21,6 +21,12 @@ app_include_js = "healthcare.bundle.js"
 # web_include_css = "/assets/healthcare/css/healthcare.css"
 # web_include_js = "/assets/healthcare/js/healthcare.js"
 
+# Website Routes
+# --------------
+website_route_rules = [
+	{"from_route": "/ai", "to_route": "ai"},
+]
+
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "healthcare/public/scss/website"
 

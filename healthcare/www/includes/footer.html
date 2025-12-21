@@ -1,0 +1,49 @@
+<footer class="main-footer">
+	<div class="footer-container">
+		<div class="footer-grid">
+			<div class="footer-column">
+				<h3><i class="fa fa-heartbeat"></i> {{ _("Healthcare") }}</h3>
+				<p>{{ _("Your trusted partner in health and wellness. We provide comprehensive medical care with compassion and excellence.") }}</p>
+				<div class="social-links">
+					<a href="#" aria-label="Facebook"><i class="fa fa-facebook"></i></a>
+					<a href="#" aria-label="Twitter"><i class="fa fa-twitter"></i></a>
+					<a href="#" aria-label="LinkedIn"><i class="fa fa-linkedin"></i></a>
+					<a href="#" aria-label="Instagram"><i class="fa fa-instagram"></i></a>
+				</div>
+			</div>
+			<div class="footer-column">
+				<h4>{{ _("Quick Links") }}</h4>
+				<ul>
+					<li><a href="/">{{ _("Home") }}</a></li>
+					<li><a href="/about">{{ _("About Us") }}</a></li>
+					<li><a href="/services">{{ _("Services") }}</a></li>
+					<li><a href="/contact">{{ _("Contact") }}</a></li>
+					<li><a href="/patient-registration-page">{{ _("Patient Registration") }}</a></li>
+				</ul>
+			</div>
+			<div class="footer-column">
+				<h4>{{ _("Services") }}</h4>
+				<ul>
+					<li><a href="/services#general">{{ _("General Medicine") }}</a></li>
+					<li><a href="/services#cardiology">{{ _("Cardiology") }}</a></li>
+					<li><a href="/services#pediatrics">{{ _("Pediatrics") }}</a></li>
+					<li><a href="/services#emergency">{{ _("Emergency Care") }}</a></li>
+					<li><a href="/services#lab">{{ _("Laboratory") }}</a></li>
+				</ul>
+			</div>
+			<div class="footer-column">
+				<h4>{{ _("Contact Info") }}</h4>
+				<ul class="contact-info">
+					<li><i class="fa fa-map-marker"></i> {{ _("123 Medical Center Dr, City, State 12345") }}</li>
+					<li><i class="fa fa-phone"></i> <a href="tel:+1234567890">+1 (234) 567-8900</a></li>
+					<li><i class="fa fa-envelope"></i> <a href="mailto:info@healthcare.com">info@healthcare.com</a></li>
+					<li><i class="fa fa-clock-o"></i> {{ _("24/7 Emergency Services") }}</li>
+				</ul>
+			</div>
+		</div>
+		<div class="footer-bottom">
+			<p>&copy; {{ frappe.utils.now_datetime().year }} {{ _("Healthcare") }}. {{ _("All rights reserved.") }}</p>
+		</div>
+	</div>
+</footer>
+

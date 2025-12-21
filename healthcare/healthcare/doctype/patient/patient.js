@@ -48,6 +48,14 @@ frappe.ui.form.on('Patient', {
 				}, __('Create'));
 				frm.toggle_enable(['customer'], 0);
 			}
+			
+			// Add Medical Report button
+			if (frappe.user.has_role('Healthcare Administrator') || frappe.user.has_role('Physician')) {
+				frm.add_custom_button(__('Medical Report'), function () {
+					create_medical_report(frm);
+				}, __('Create'));
+			}
+			
 			frappe.contacts.render_address_and_contact(frm);
 			erpnext.utils.set_party_dashboard_indicators(frm);
 		} else {
@@ -61,6 +69,14 @@ frappe.ui.form.on('Patient', {
 		} else {
 			$(frm.fields_dict['age_html'].wrapper).html('');
 		}
+	},
+
+	create_appointment_btn: function(frm) {
+		if (frm.is_new()) {
+			frappe.msgprint(__('Please save the patient before creating an appointment.'));
+			return;
+		}
+		open_appointment_dialog(frm);
 	}
 });
 
@@ -103,6 +119,20 @@ let create_medical_record = function (frm) {
 	frappe.new_doc('Patient Medical Record');
 };
 
+let create_medical_report = function (frm) {
+	frappe.call({
+		method: 'healthcare.healthcare.healthcare.doctype.medical_report.medical_report.create_medical_report_from_patient',
+		args: {
+			patient_name: frm.doc.name
+		},
+		callback: function(r) {
+			if (!r.exc && r.message) {
+				frappe.set_route('Form', 'Medical Report', r.message.name);
+			}
+		}
+	});
+};
+
 let get_age = function (birth) {
 	let birth_moment = moment(birth);
 	let current_moment = moment(Date());
@@ -143,4 +173,94 @@ let invoice_registration = function (frm) {
 			}
 		}
 	});
+};
+
+let appointmentDialog = null;
+const open_appointment_dialog = (frm) => {
+	if (!appointmentDialog) {
+		appointmentDialog = new frappe.ui.Dialog({
+			title: __('Create Appointment'),
+			fields: [
+				{
+					fieldname: 'patient_display',
+					label: __('Patient'),
+					fieldtype: 'Data',
+					read_only: 1
+				},
+				{
+					fieldname: 'practitioner',
+					label: __('Healthcare Practitioner'),
+					fieldtype: 'Link',
+					options: 'Healthcare Practitioner',
+					reqd: 1
+				},
+				{
+					fieldname: 'appointment_type',
+					label: __('Appointment Type'),
+					fieldtype: 'Link',
+					options: 'Appointment Type',
+					reqd: 1
+				},
+				{
+					fieldname: 'appointment_date',
+					label: __('Appointment Date'),
+					fieldtype: 'Date',
+					reqd: 1
+				},
+				{
+					fieldname: 'appointment_time',
+					label: __('Appointment Time'),
+					fieldtype: 'Time',
+					reqd: 1
+				},
+				{
+					fieldname: 'notes',
+					label: __('Notes'),
+					fieldtype: 'Small Text'
+				}
+			],
+			primary_action_label: __('Create'),
+			primary_action(values) {
+				if (!values) return;
+				const payload = {
+					doctype: 'Patient Appointment',
+					patient: frm.doc.name,
+					patient_name: frm.doc.patient_name,
+					practitioner: values.practitioner,
+					appointment_type: values.appointment_type,
+					appointment_date: values.appointment_date,
+					appointment_time: values.appointment_time,
+					status: 'Open',
+					notes: values.notes
+				};
+
+				frappe.call({
+					method: 'frappe.client.insert',
+					args: { doc: payload },
+					freeze: true,
+					freeze_message: __('Creating appointment...'),
+					callback: (r) => {
+						if (!r.exc) {
+							frappe.msgprint(__('Appointment {0} created successfully.', [r.message.name]));
+							appointmentDialog.hide();
+							appointmentDialog.set_values({
+								practitioner: '',
+								appointment_type: '',
+								appointment_date: '',
+								appointment_time: '',
+								notes: ''
+							});
+							frappe.set_route('Form', 'Patient Appointment', r.message.name);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	appointmentDialog.set_values({
+		patient_display: frm.doc.patient_name || frm.doc.name,
+		patient: frm.doc.name
+	});
+	appointmentDialog.show();
 };

@@ -11,7 +11,7 @@ from frappe.contacts.address_and_contact import load_address_and_contact
 from frappe.contacts.doctype.contact.contact import get_default_contact
 from frappe.model.document import Document
 from frappe.model.naming import set_name_by_naming_series, set_name_from_naming_options
-from frappe.utils import cint, cstr, getdate
+from frappe.utils import cint, cstr, getdate, get_link_to_form
 from frappe.utils.nestedset import get_root_of
 
 from erpnext import get_default_currency
@@ -35,6 +35,7 @@ class Patient(Document):
 		self.set_full_name()
 		self.flags.is_new_doc = self.is_new()
 		self.flags.existing_customer = self.is_new() and bool(self.customer)
+		self.check_duplicate_patient_name()
 
 	def before_insert(self):
 		self.set_missing_customer_details()
@@ -147,17 +148,33 @@ class Patient(Document):
 	def get_patient_name(self):
 		self.set_full_name()
 		name = self.patient_name
-		if frappe.db.get_value("Patient", name):
-			count = frappe.db.sql(
-				"""select ifnull(MAX(CAST(SUBSTRING_INDEX(name, ' ', -1) AS UNSIGNED)), 0) from tabPatient
-				 where name like %s""",
-				"%{0} - %".format(name),
-				as_list=1,
-			)[0][0]
-			count = cint(count) + 1
-			return "{0} - {1}".format(name, cstr(count))
-
 		return name
+
+	def check_duplicate_patient_name(self):
+		"""Check if patient name already exists and show notification"""
+		if not self.patient_name:
+			return
+		
+		# Build filter to check for existing patient with same name
+		filters = {"patient_name": self.patient_name}
+		
+		# If updating existing document, exclude current patient
+		if not self.is_new() and self.name:
+			filters["name"] = ["!=", self.name]
+		
+		existing_patient = frappe.db.get_value("Patient", filters, "name")
+		
+		if existing_patient:
+			patient_link = get_link_to_form("Patient", existing_patient)
+			frappe.msgprint(
+				_("Patient with name '{0}' already exists: {1}").format(
+					frappe.bold(self.patient_name),
+					patient_link
+				),
+				title=_("Duplicate Patient Name"),
+				indicator="orange",
+				alert=True
+			)
 
 	@property
 	def age(self):

@@ -1,0 +1,271 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("Services") }} - {{ _("Healthcare") }}{% endblock %}
+
+{% block page_content %}
+{% include "healthcare/www/includes/navbar.html" %}
+
+<!-- Page Header -->
+<section class="page-header">
+	<div class="container">
+		<h1>{{ _("Our Services") }}</h1>
+		<p>{{ _("Comprehensive healthcare solutions tailored to your needs") }}</p>
+	</div>
+</section>
+
+<!-- Services Section -->
+<section class="services-detail-section">
+	<div class="container">
+		<div class="service-detail" id="general">
+			<div class="service-detail-content">
+				<div class="service-icon-large">
+					<i class="fa fa-stethoscope"></i>
+				</div>
+				<div class="service-detail-text">
+					<h2>{{ _("General Medicine") }}</h2>
+					<p>{{ _("Our general medicine department provides comprehensive primary care services for patients of all ages. Our experienced physicians offer preventive care, routine check-ups, diagnosis and treatment of common illnesses, and management of chronic conditions.") }}</p>
+					<ul class="service-features">
+						<li><i class="fa fa-check"></i> {{ _("Annual physical examinations") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Preventive care and health screenings") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Chronic disease management") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Acute illness treatment") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Health counseling and education") }}</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="service-detail" id="cardiology">
+			<div class="service-detail-content reverse">
+				<div class="service-icon-large">
+					<i class="fa fa-heart"></i>
+				</div>
+				<div class="service-detail-text">
+					<h2>{{ _("Cardiology") }}</h2>
+					<p>{{ _("Our cardiology department specializes in the diagnosis, treatment, and prevention of heart and cardiovascular diseases. We offer advanced cardiac care with state-of-the-art diagnostic equipment and experienced cardiologists.") }}</p>
+					<ul class="service-features">
+						<li><i class="fa fa-check"></i> {{ _("Cardiac consultations and evaluations") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("ECG and stress testing") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Echocardiography") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Cardiac rehabilitation") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Preventive cardiology") }}</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="service-detail" id="pediatrics">
+			<div class="service-detail-content">
+				<div class="service-icon-large">
+					<i class="fa fa-child"></i>
+				</div>
+				<div class="service-detail-text">
+					<h2>{{ _("Pediatrics") }}</h2>
+					<p>{{ _("Our pediatric department provides specialized medical care for infants, children, and adolescents. Our team of pediatricians is dedicated to ensuring the health and well-being of your children through comprehensive care and preventive medicine.") }}</p>
+					<ul class="service-features">
+						<li><i class="fa fa-check"></i> {{ _("Well-child visits and immunizations") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Developmental assessments") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Acute and chronic illness management") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Adolescent health services") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Parent education and counseling") }}</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="service-detail" id="emergency">
+			<div class="service-detail-content reverse">
+				<div class="service-icon-large">
+					<i class="fa fa-wheelchair"></i>
+				</div>
+				<div class="service-detail-text">
+					<h2>{{ _("Emergency Care") }}</h2>
+					<p>{{ _("Our emergency department operates 24/7 to provide immediate medical attention for urgent and life-threatening conditions. Our experienced emergency physicians and staff are equipped to handle all types of medical emergencies.") }}</p>
+					<ul class="service-features">
+						<li><i class="fa fa-check"></i> {{ _("24/7 emergency services") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Trauma care") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Critical care support") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Rapid diagnostic services") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Emergency surgery") }}</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="service-detail" id="lab">
+			<div class="service-detail-content">
+				<div class="service-icon-large">
+					<i class="fa fa-flask"></i>
+				</div>
+				<div class="service-detail-text">
+					<h2>{{ _("Laboratory Services") }}</h2>
+					<p>{{ _("Our state-of-the-art laboratory provides comprehensive diagnostic testing services with accurate and timely results. We offer a wide range of tests to support diagnosis, treatment monitoring, and preventive care.") }}</p>
+					<ul class="service-features">
+						<li><i class="fa fa-check"></i> {{ _("Blood tests and analysis") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Urine and stool analysis") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Microbiology and culture tests") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Pathology services") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Rapid test results") }}</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="service-detail" id="radiology">
+			<div class="service-detail-content reverse">
+				<div class="service-icon-large">
+					<i class="fa fa-x-ray"></i>
+				</div>
+				<div class="service-detail-text">
+					<h2>{{ _("Radiology") }}</h2>
+					<p>{{ _("Our radiology department offers advanced imaging services to aid in diagnosis and treatment planning. We utilize the latest imaging technology to provide high-quality diagnostic images with minimal radiation exposure.") }}</p>
+					<ul class="service-features">
+						<li><i class="fa fa-check"></i> {{ _("X-ray imaging") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("CT scans") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("MRI scans") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Ultrasound imaging") }}</li>
+						<li><i class="fa fa-check"></i> {{ _("Mammography") }}</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+	<div class="container">
+		<div class="cta-content">
+			<h2>{{ _("Need Medical Care?") }}</h2>
+			<p>{{ _("Register as a patient today and get access to all our services") }}</p>
+			<a href="/patient-registration-page" class="btn btn-white btn-large">
+				<i class="fa fa-user-plus"></i> {{ _("Register Now") }}
+			</a>
+		</div>
+	</div>
+</section>
+
+{% include "healthcare/www/includes/footer.html" %}
+
+<style>
+	{% include "healthcare/www/includes/styles.css" %}
+	
+	.page-header {
+		background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+		color: white;
+		padding: 4rem 0;
+		text-align: center;
+	}
+
+	.page-header h1 {
+		font-size: 3rem;
+		margin-bottom: 1rem;
+	}
+
+	.page-header p {
+		font-size: 1.2rem;
+		opacity: 0.95;
+	}
+
+	.services-detail-section {
+		padding: 5rem 0;
+	}
+
+	.service-detail {
+		margin-bottom: 5rem;
+	}
+
+	.service-detail:last-child {
+		margin-bottom: 0;
+	}
+
+	.service-detail-content {
+		display: grid;
+		grid-template-columns: 200px 1fr;
+		gap: 3rem;
+		align-items: center;
+	}
+
+	.service-detail-content.reverse {
+		grid-template-columns: 1fr 200px;
+	}
+
+	.service-detail-content.reverse .service-icon-large {
+		order: 2;
+	}
+
+	.service-icon-large {
+		width: 200px;
+		height: 200px;
+		background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+
+	.service-icon-large i {
+		font-size: 5rem;
+		color: white;
+	}
+
+	.service-detail-text h2 {
+		font-size: 2.5rem;
+		margin-bottom: 1.5rem;
+		color: var(--text-dark);
+	}
+
+	.service-detail-text p {
+		font-size: 1.1rem;
+		line-height: 1.8;
+		color: var(--text-light);
+		margin-bottom: 1.5rem;
+	}
+
+	.service-features {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		gap: 1rem;
+	}
+
+	.service-features li {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		color: var(--text-dark);
+		font-size: 1rem;
+	}
+
+	.service-features li i {
+		color: var(--success-color);
+		font-size: 1.2rem;
+	}
+
+	@media (max-width: 768px) {
+		.service-detail-content,
+		.service-detail-content.reverse {
+			grid-template-columns: 1fr;
+			text-align: center;
+		}
+
+		.service-icon-large {
+			margin: 0 auto;
+		}
+
+		.service-detail-content.reverse .service-icon-large {
+			order: 0;
+		}
+
+		.page-header h1 {
+			font-size: 2rem;
+		}
+
+		.service-detail-text h2 {
+			font-size: 2rem;
+		}
+	}
+</style>
+{% endblock %}
+

@@ -1,0 +1,45 @@
+<nav class="main-navbar">
+	<div class="navbar-container">
+		<div class="navbar-brand">
+			<a href="/">
+				<i class="fa fa-heartbeat"></i>
+				<span>{{ _("Healthcare") }}</span>
+			</a>
+		</div>
+		<button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation">
+			<span></span>
+			<span></span>
+			<span></span>
+		</button>
+		<ul class="navbar-menu" id="navbar-menu">
+			<li><a href="/" class="nav-link">{{ _("Home") }}</a></li>
+			<li><a href="/about" class="nav-link">{{ _("About") }}</a></li>
+			<li><a href="/services" class="nav-link">{{ _("Services") }}</a></li>
+			<li><a href="/contact" class="nav-link">{{ _("Contact") }}</a></li>
+			<li><a href="/patient-registration-page" class="nav-link nav-link-primary">{{ _("Register") }}</a></li>
+		</ul>
+	</div>
+</nav>
+
+<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		const toggle = document.getElementById('navbar-toggle');
+		const menu = document.getElementById('navbar-menu');
+		
+		if (toggle && menu) {
+			toggle.addEventListener('click', function() {
+				menu.classList.toggle('active');
+				toggle.classList.toggle('active');
+			});
+			
+			// Close menu when clicking outside
+			document.addEventListener('click', function(e) {
+				if (!toggle.contains(e.target) && !menu.contains(e.target)) {
+					menu.classList.remove('active');
+					toggle.classList.remove('active');
+				}
+			});
+		}
+	});
+</script>
+

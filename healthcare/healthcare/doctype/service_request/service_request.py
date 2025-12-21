@@ -11,9 +11,15 @@ from six import string_types
 import frappe
 from frappe import _
 from frappe.model.mapper import get_mapped_doc
-from frappe.utils import now_datetime
+from frappe.utils import flt, getdate, now_datetime
+
+from erpnext.stock.get_item_details import get_item_details
 
 from healthcare.controllers.service_request_controller import ServiceRequestController
+from healthcare.healthcare.doctype.healthcare_settings.healthcare_settings import (
+	get_income_account,
+	get_receivable_account,
+)
 from healthcare.healthcare.doctype.observation.observation import add_observation
 from healthcare.healthcare.doctype.observation_template.observation_template import (
 	get_observation_template_details,
@@ -109,32 +115,68 @@ def set_service_request_status(service_request, status):
 
 @frappe.whitelist()
 def make_clinical_procedure(service_request):
+	# Handle different input types: string (JSON or name), dict, or Document object
 	if isinstance(service_request, string_types):
-		service_request = json.loads(service_request)
+		# Try to parse as JSON, if it fails, treat as document name
+		try:
+			service_request = json.loads(service_request)
+			service_request = frappe._dict(service_request)
+		except (json.JSONDecodeError, TypeError, ValueError):
+			# If parsing fails, assume it's a document name and fetch from DB
+			service_request = frappe.get_doc("Service Request", service_request)
+	elif isinstance(service_request, dict):
+		# Convert dict to frappe._dict for easier attribute access
 		service_request = frappe._dict(service_request)
 
+	# Ensure we have a document object - fetch from DB if we only have a name
+	if isinstance(service_request, frappe._dict) and service_request.get("name"):
+		# If we have a name but missing fields, fetch the full document
+		if not service_request.get("template_dn"):
+			service_request = frappe.get_doc("Service Request", service_request.name)
+
+	# Get billing_status - handle both dict and document objects
+	if isinstance(service_request, frappe._dict):
+		billing_status = service_request.get("billing_status")
+		service_request_name = service_request.get("name")
+	else:
+		billing_status = getattr(service_request, "billing_status", None)
+		service_request_name = getattr(service_request, "name", None)
+
+	# Fetch billing_status from database if missing
+	if not billing_status and service_request_name:
+		billing_status = frappe.db.get_value(
+			"Service Request", service_request_name, "billing_status"
+		) or "Pending"
+
+	# Check if invoicing is required
 	if (
 		frappe.db.get_single_value("Healthcare Settings", "process_service_request_only_if_paid")
-		and service_request.billing_status != "Invoiced"
+		and billing_status != "Invoiced"
 	):
 		frappe.throw(
 			_("Service Request need to be invoiced before proceeding"),
 			title=_("Payment Required"),
 		)
 
+	# Helper function to get attribute value safely
+	def get_attr(obj, attr, default=None):
+		if isinstance(obj, frappe._dict):
+			return obj.get(attr, default)
+		return getattr(obj, attr, default)
+
 	doc = frappe.new_doc("Clinical Procedure")
-	doc.procedure_template = service_request.template_dn
-	doc.service_request = service_request.name
-	doc.company = service_request.company
-	doc.patient = service_request.patient
-	doc.patient_name = service_request.patient_name
-	doc.patient_sex = service_request.patient_gender
-	doc.patient_age = service_request.patient_age_data
-	doc.inpatient_record = service_request.inpatient_record
-	doc.practitioner = service_request.practitioner
-	doc.start_date = service_request.occurrence_date
-	doc.start_time = service_request.occurrence_time
-	doc.medical_department = service_request.medical_department
+	doc.procedure_template = get_attr(service_request, "template_dn")
+	doc.service_request = get_attr(service_request, "name")
+	doc.company = get_attr(service_request, "company")
+	doc.patient = get_attr(service_request, "patient")
+	doc.patient_name = get_attr(service_request, "patient_name")
+	doc.patient_sex = get_attr(service_request, "patient_gender")
+	doc.patient_age = get_attr(service_request, "patient_age_data")
+	doc.inpatient_record = get_attr(service_request, "inpatient_record")
+	doc.practitioner = get_attr(service_request, "practitioner")
+	doc.start_date = get_attr(service_request, "occurrence_date")
+	doc.start_time = get_attr(service_request, "occurrence_time")
+	doc.medical_department = get_attr(service_request, "medical_department")
 
 	return doc
 
@@ -142,12 +184,31 @@ def make_clinical_procedure(service_request):
 @frappe.whitelist()
 def make_lab_test(service_request):
 	if isinstance(service_request, string_types):
-		service_request = json.loads(service_request)
-		service_request = frappe._dict(service_request)
+		# Try to parse as JSON, if it fails, treat as document name
+		try:
+			service_request = json.loads(service_request)
+			service_request = frappe._dict(service_request)
+		except (json.JSONDecodeError, TypeError, ValueError):
+			# If parsing fails, assume it's a document name and fetch from DB
+			service_request = frappe.get_doc("Service Request", service_request)
+
+	# Get billing_status - handle both dict and document objects
+	if isinstance(service_request, frappe._dict):
+		billing_status = service_request.get("billing_status")
+		if not billing_status and service_request.get("name"):
+			billing_status = frappe.db.get_value(
+				"Service Request", service_request.name, "billing_status"
+			) or "Pending"
+	else:
+		billing_status = getattr(service_request, "billing_status", None)
+		if not billing_status and hasattr(service_request, "name"):
+			billing_status = frappe.db.get_value(
+				"Service Request", service_request.name, "billing_status"
+			) or "Pending"
 
 	if (
 		frappe.db.get_single_value("Healthcare Settings", "process_service_request_only_if_paid")
-		and service_request.billing_status != "Invoiced"
+		and billing_status != "Invoiced"
 	):
 		frappe.throw(
 			_("Service Request need to be invoiced before proceeding"),
@@ -177,12 +238,31 @@ def make_lab_test(service_request):
 @frappe.whitelist()
 def make_therapy_session(service_request):
 	if isinstance(service_request, string_types):
-		service_request = json.loads(service_request)
-		service_request = frappe._dict(service_request)
+		# Try to parse as JSON, if it fails, treat as document name
+		try:
+			service_request = json.loads(service_request)
+			service_request = frappe._dict(service_request)
+		except (json.JSONDecodeError, TypeError, ValueError):
+			# If parsing fails, assume it's a document name and fetch from DB
+			service_request = frappe.get_doc("Service Request", service_request)
+
+	# Get billing_status - handle both dict and document objects
+	if isinstance(service_request, frappe._dict):
+		billing_status = service_request.get("billing_status")
+		if not billing_status and service_request.get("name"):
+			billing_status = frappe.db.get_value(
+				"Service Request", service_request.name, "billing_status"
+			) or "Pending"
+	else:
+		billing_status = getattr(service_request, "billing_status", None)
+		if not billing_status and hasattr(service_request, "name"):
+			billing_status = frappe.db.get_value(
+				"Service Request", service_request.name, "billing_status"
+			) or "Pending"
 
 	if (
 		frappe.db.get_single_value("Healthcare Settings", "process_service_request_only_if_paid")
-		and service_request.billing_status != "Invoiced"
+		and billing_status != "Invoiced"
 	):
 		frappe.throw(
 			_("Service Request need to be invoiced before proceeding"),
@@ -209,12 +289,31 @@ def make_therapy_session(service_request):
 @frappe.whitelist()
 def make_observation(service_request):
 	if isinstance(service_request, string_types):
-		service_request = json.loads(service_request)
-		service_request = frappe._dict(service_request)
+		# Try to parse as JSON, if it fails, treat as document name
+		try:
+			service_request = json.loads(service_request)
+			service_request = frappe._dict(service_request)
+		except (json.JSONDecodeError, TypeError, ValueError):
+			# If parsing fails, assume it's a document name and fetch from DB
+			service_request = frappe.get_doc("Service Request", service_request)
+
+	# Get billing_status - handle both dict and document objects
+	if isinstance(service_request, frappe._dict):
+		billing_status = service_request.get("billing_status")
+		if not billing_status and service_request.get("name"):
+			billing_status = frappe.db.get_value(
+				"Service Request", service_request.name, "billing_status"
+			) or "Pending"
+	else:
+		billing_status = getattr(service_request, "billing_status", None)
+		if not billing_status and hasattr(service_request, "name"):
+			billing_status = frappe.db.get_value(
+				"Service Request", service_request.name, "billing_status"
+			) or "Pending"
 
 	if (
 		frappe.db.get_single_value("Healthcare Settings", "process_service_request_only_if_paid")
-		and service_request.billing_status != "Invoiced"
+		and billing_status != "Invoiced"
 	):
 		frappe.throw(
 			_("Service Request need to be invoiced before proceeding"),
@@ -444,3 +543,164 @@ def make_appointment(source_name, target_doc=None, ignore_permissions=False):
 	)
 
 	return doclist
+
+
+@frappe.whitelist()
+def create_sales_invoice_from_service_request(service_request):
+	"""Create Sales Invoice from Service Request"""
+	if isinstance(service_request, string_types):
+		# Try to parse as JSON, if it fails, treat as document name
+		try:
+			service_request = json.loads(service_request)
+			service_request = frappe._dict(service_request)
+		except (json.JSONDecodeError, TypeError, ValueError):
+			# If parsing fails, assume it's a document name and fetch from DB
+			service_request = frappe.get_doc("Service Request", service_request)
+	elif isinstance(service_request, dict):
+		# Convert dict to frappe._dict for easier attribute access
+		service_request = frappe._dict(service_request)
+
+	# Ensure we have a document object - fetch from DB if we only have a name
+	if isinstance(service_request, frappe._dict) and service_request.get("name"):
+		# If we have a name but missing fields, fetch the full document
+		if not service_request.get("template_dn"):
+			service_request = frappe.get_doc("Service Request", service_request.name)
+
+	# Helper function to get attribute value safely
+	def get_attr(obj, attr, default=None):
+		if isinstance(obj, frappe._dict):
+			return obj.get(attr, default)
+		return getattr(obj, attr, default)
+
+	# Validate required fields
+	if not get_attr(service_request, "item_code"):
+		frappe.throw(
+			_("Service Request {0} does not have an item_code. Please set the item code in the template.").format(
+				get_attr(service_request, "name", "")
+			),
+			title=_("Missing Item Code"),
+		)
+
+	# Get customer from patient
+	patient = get_attr(service_request, "patient")
+	if not patient:
+		frappe.throw(
+			_("Service Request {0} does not have a patient").format(
+				get_attr(service_request, "name", "")
+			),
+			title=_("Missing Patient"),
+		)
+
+	customer = frappe.db.get_value("Patient", patient, "customer")
+	if not customer:
+		frappe.throw(
+			_("Patient {0} is not linked to a customer. Please link a customer to the patient.").format(patient),
+			title=_("Customer Not Found"),
+		)
+
+	# Check if item is billable
+	template_dt = get_attr(service_request, "template_dt")
+	template_dn = get_attr(service_request, "template_dn")
+	if template_dt and template_dn:
+		is_billable = frappe.db.get_value(template_dt, template_dn, "is_billable")
+		if not is_billable:
+			frappe.throw(
+				_("The template {0} is not billable. Cannot create Sales Invoice.").format(template_dn),
+				title=_("Not Billable"),
+			)
+
+	# Create Sales Invoice
+	sales_invoice = frappe.new_doc("Sales Invoice")
+	sales_invoice.patient = patient
+	sales_invoice.customer = customer
+	sales_invoice.due_date = getdate()
+	company = get_attr(service_request, "company")
+	sales_invoice.company = company
+	sales_invoice.debit_to = get_receivable_account(company)
+
+	# Get item details
+	price_list, price_list_currency = frappe.db.get_values(
+		"Price List", {"selling": 1}, ["name", "currency"]
+	)[0] or [None, None]
+
+	item_code = get_attr(service_request, "item_code")
+	args = {
+		"doctype": "Sales Invoice",
+		"item_code": item_code,
+		"company": company,
+		"customer": customer,
+		"selling_price_list": price_list,
+		"price_list_currency": price_list_currency or frappe.get_cached_value("Company", company, "default_currency"),
+		"plc_conversion_rate": 1.0,
+		"conversion_rate": 1.0,
+	}
+	item_details = get_item_details(args)
+
+	# Add item to invoice
+	item = sales_invoice.append("items", {})
+	item.item_code = item_code
+	item.qty = get_attr(service_request, "quantity") or 1
+	item.rate = item_details.get("price_list_rate", 0) if item_details else 0
+	item.amount = flt(item.rate) * flt(item.qty)
+	item.reference_dt = "Service Request"
+	item.reference_dn = get_attr(service_request, "name")
+	practitioner = get_attr(service_request, "practitioner")
+	item.income_account = get_income_account(practitioner, company)
+
+	# Set description from template if available
+	if template_dt and template_dn:
+		template_doc = frappe.get_doc(template_dt, template_dn)
+		if hasattr(template_doc, "description") and template_doc.description:
+			item.description = template_doc.description
+		elif hasattr(template_doc, "lab_test_description") and template_doc.lab_test_description:
+			item.description = template_doc.lab_test_description
+		elif hasattr(template_doc, "order_description") and template_doc.order_description:
+			item.description = template_doc.order_description
+
+	# Get default mode of payment - try to get any enabled mode of payment
+	default_mode_of_payment = frappe.db.get_value("Mode of Payment", {"enabled": 1}, "name", order_by="creation desc")
+	if not default_mode_of_payment:
+		# If no enabled mode found, try to get "Cash" or any mode
+		default_mode_of_payment = frappe.db.get_value("Mode of Payment", "Cash", "name")
+		if not default_mode_of_payment:
+			# Get any mode of payment as last resort
+			default_mode_of_payment = frappe.db.get_value("Mode of Payment", {}, "name", order_by="creation desc")
+			if not default_mode_of_payment:
+				# If no mode of payment exists at all, we can't create POS invoice
+				frappe.throw(
+					_("No Mode of Payment found. Please create at least one Mode of Payment to create paid invoices."),
+					title=_("Mode of Payment Required")
+				)
+
+	# Calculate totals first to get the amount
+	sales_invoice.set_missing_values(for_validate=True)
+	
+	# Make it a POS invoice and add payment to make it paid automatically
+	sales_invoice.is_pos = 1
+	payment = sales_invoice.append("payments", {})
+	payment.mode_of_payment = default_mode_of_payment
+	# Set initial payment amount (will be updated to exact grand_total after calculation)
+	# Use item total as initial estimate
+	estimated_total = item.amount
+	payment.amount = estimated_total
+	
+	sales_invoice.flags.ignore_mandatory = True
+	sales_invoice.save(ignore_permissions=True)
+	
+	# Now update payment amount to exact grand total to make it fully paid
+	payment.amount = sales_invoice.grand_total
+	sales_invoice.save(ignore_permissions=True)
+	sales_invoice.submit()
+
+	# Update Service Request billing status
+	if isinstance(service_request, frappe._dict):
+		service_request_doc = frappe.get_doc("Service Request", service_request.name)
+	else:
+		service_request_doc = service_request
+	
+	service_request_doc.update_invoice_details(item.qty)
+
+	return {
+		"sales_invoice": sales_invoice.name,
+		"paid_amount": sales_invoice.grand_total
+	}

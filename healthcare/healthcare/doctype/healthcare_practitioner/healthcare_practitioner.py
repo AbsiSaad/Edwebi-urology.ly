@@ -11,7 +11,7 @@ from frappe.contacts.address_and_contact import (
 )
 from frappe.model.document import Document
 from frappe.model.naming import append_number_if_name_exists
-from frappe.utils import get_link_to_form
+from frappe.utils import flt, get_link_to_form
 
 from erpnext.accounts.party import validate_party_accounts
 
@@ -66,6 +66,7 @@ class HealthcarePractitioner(Document):
 				)
 
 		self.validate_practitioner_schedules()
+		self.validate_commission_settings()
 
 	def on_update(self):
 		if self.user_id:
@@ -118,6 +119,62 @@ class HealthcarePractitioner(Document):
 
 	def on_trash(self):
 		delete_contact_and_address("Healthcare Practitioner", self.name)
+
+	def validate_commission_settings(self):
+		percentage_fields = [
+			("default_commission_percentage", self.default_commission_percentage),
+			("encounter_commission_percentage", self.encounter_commission_percentage),
+			("lab_commission_percentage", self.lab_commission_percentage),
+			("procedure_commission_percentage", self.procedure_commission_percentage),
+			("therapy_commission_percentage", self.therapy_commission_percentage),
+		]
+
+		for fieldname, value in percentage_fields:
+			if value is None:
+				continue
+
+			if value < 0 or value > 100:
+				frappe.throw(
+					_("Value for {0} must be between 0 and 100").format(
+						frappe.bold(self.meta.get_label(fieldname))
+					)
+				)
+
+		if (
+			self.commission_cap_amount
+			and self.minimum_commission_amount
+			and flt(self.commission_cap_amount) < flt(self.minimum_commission_amount)
+		):
+			frappe.throw(_("Commission cap cannot be less than minimum commission amount."))
+
+		seen = set()
+
+		for rule in getattr(self, "commission_rules", []):
+			if not rule.is_active:
+				continue
+
+			key = (rule.service_type, rule.reference_item or "", rule.apply_on_amount or "")
+
+			if key in seen:
+				frappe.throw(
+					_("Duplicate commission rule for service {0} detected.").format(
+						frappe.bold(rule.service_type)
+					)
+				)
+
+			seen.add(key)
+
+			if rule.basis == "Percentage":
+				if not rule.commission_percentage:
+					frappe.throw(_("Percentage is required for commission rule row #{0}.").format(rule.idx))
+
+				if rule.commission_percentage < 0 or rule.commission_percentage > 100:
+					frappe.throw(
+						_("Percentage for commission rule row #{0} must be between 0 and 100.").format(rule.idx)
+					)
+
+			if rule.basis == "Flat Amount" and not rule.flat_amount:
+				frappe.throw(_("Flat amount is required for commission rule row #{0}.").format(rule.idx))
 
 
 def validate_service_item(item, msg):

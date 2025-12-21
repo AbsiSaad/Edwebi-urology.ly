@@ -1,0 +1,23 @@
+{
+ "aggregate_function_based_on": "commission_amount",
+ "creation": "2025-01-27 00:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Doctor Wallet",
+ "dynamic_filters_json": "[]",
+ "filters_json": "[[\"Doctor Wallet\",\"status\",\"=\",\"Paid\",false]]",
+ "function": "Sum",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Paid Doctor Commission",
+ "modified": "2025-01-27 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Doctor Wallet Paid",
+ "owner": "Administrator",
+ "show_percentage_stats": 1,
+ "stats_time_interval": "Monthly",
+ "type": "Document Type"
+}
+

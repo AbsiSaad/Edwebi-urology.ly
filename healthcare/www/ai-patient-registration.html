@@ -1,0 +1,40 @@
+{%- extends "templates/web.html" -%}
+
+{%- block title -%}{{ _("تسجيل المريض - الذكاء الاصطناعي") }}{%- endblock -%}
+
+{%- block page_content -%}
+<div class="ai-patient-registration-container" style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px;">
+    <div style="max-width: 1400px; margin: 0 auto;">
+        <div id="ai-registration-root"></div>
+    </div>
+</div>
+
+<script type="module" crossorigin src="/assets/healthcare/ai-registration/assets/index-UZB5nVFf.js"></script>
+<link rel="stylesheet" crossorigin href="/assets/healthcare/ai-registration/assets/index-BwmUTQlE.css">
+
+<script>
+window.ERPNextConfig = {
+    apiUrl: window.location.origin,
+    siteName: '{{ site_name or "" }}',
+    csrfToken: '{{ csrf_token or "" }}',
+    aiBackendUrl: '{{ ai_backend_url or "http://102.213.183.187:8001" }}'
+};
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('AI Patient Registration page loaded');
+    console.log('ERPNext Config:', window.ERPNextConfig);
+});
+</script>
+
+<style>
+.ai-patient-registration-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+#ai-registration-root {
+    width: 100%;
+    height: 100%;
+}
+</style>
+{%- endblock -%}

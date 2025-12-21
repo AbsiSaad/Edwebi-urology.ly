@@ -72,11 +72,19 @@ frappe.ui.form.on('Therapy Session', {
 			}, 'Create');
 
 			frappe.db.get_value('Therapy Plan', {'name': frm.doc.therapy_plan}, 'therapy_plan_template', (r) => {
-				if (r && !r.therapy_plan_template) {
+				if (r && !r.therapy_plan_template && !frm.doc.invoiced) {
 					frm.add_custom_button(__('Sales Invoice'), function() {
-						frappe.model.open_mapped_doc({
-							method: 'healthcare.healthcare.doctype.therapy_session.therapy_session.invoice_therapy_session',
-							frm: frm,
+						frappe.call({
+							method: 'healthcare.healthcare.doctype.therapy_session.therapy_session.create_sales_invoice',
+							args: {
+								therapy_session: frm.doc.name
+							},
+							freeze: true,
+							callback: function(r) {
+								if (!r.exc) {
+									frm.reload_doc();
+								}
+							}
 						});
 					}, 'Create');
 				}

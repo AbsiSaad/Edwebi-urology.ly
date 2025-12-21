@@ -1,0 +1,80 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-11-24 00:00:00",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+  "field_order": [
+    "appointment_date",
+    "practitioner",
+    "section_break_message",
+    "general_message_template",
+    "section_break_recipients",
+    "recipients"
+  ],
+ "fields": [
+  {
+   "fieldname": "appointment_date",
+   "fieldtype": "Date",
+   "label": "Appointment Date",
+   "reqd": 1,
+   "in_list_view": 0
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "label": "Practitioner",
+   "options": "Healthcare Practitioner",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "section_break_message",
+   "fieldtype": "Section Break",
+   "label": "Message Template"
+  },
+  {
+   "default": "مرحبًا {{patient_name}}،\n\nلديك موعد مع {{practitioner_name}} بتاريخ {{appointment_datetime}} في {{company}}.\n\nشكرًا لك، ونتمنى لك يومًا طيبًا.",
+   "description": "استخدم {{patient_name}}, {{practitioner_name}}, {{appointment_datetime}}, {{company}} كمتغيرات",
+   "fieldname": "general_message_template",
+   "fieldtype": "Small Text",
+   "label": "General Message Template"
+  },
+  {
+   "fieldname": "section_break_recipients",
+   "fieldtype": "Section Break",
+   "label": "Recipients"
+  },
+  {
+   "fieldname": "recipients",
+   "fieldtype": "Table",
+   "label": "Recipients",
+   "options": "Appointment WhatsApp Recipient"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-11-24 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Appointment WhatsApp Center",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
+
+

@@ -32,11 +32,18 @@ class LabTest(Document):
 				"Service Request", self.service_request, "status", "completed-Request Status"
 			)
 
+		# Create doctor commission entry
+		from healthcare.healthcare.scripts.lab_commission import on_lab_test_submit
+		on_lab_test_submit(self, None)
+
 	def on_cancel(self):
 		self.db_set("status", "Cancelled")
 		if self.service_request:
 			frappe.db.set_value("Service Request", self.service_request, "status", "active-Request Status")
 		self.reload()
+		# Reverse doctor commission entry
+		from healthcare.healthcare.scripts.lab_commission import on_lab_test_cancel
+		on_lab_test_cancel(self, None)
 
 	def on_update(self):
 		if self.sensitivity_test_items:

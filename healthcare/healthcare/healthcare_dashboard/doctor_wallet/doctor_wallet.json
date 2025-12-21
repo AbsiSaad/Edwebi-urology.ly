@@ -1,0 +1,40 @@
+{
+ "cards": [
+  {
+   "card": "Doctor Wallet Unpaid"
+  },
+  {
+   "card": "Doctor Wallet Paid"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "Doctor Wallet Trend",
+   "width": "Full"
+  },
+  {
+   "chart": "Doctor Wallet by Status",
+   "width": "Half"
+  },
+  {
+   "chart": "\u0627\u0644\u062e\u0632\u064a\u0646\u0629",
+   "width": "Half"
+  },
+  {
+   "chart": "Doctor Wallet Ledger-1",
+   "width": "Half"
+  }
+ ],
+ "creation": "2025-01-27 00:00:00",
+ "dashboard_name": "Doctor Wallet",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2025-12-18 16:55:25.606601",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Doctor Wallet",
+ "owner": "Administrator"
+}

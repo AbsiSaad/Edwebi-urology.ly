@@ -1,0 +1,350 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("About Us") }} - {{ _("Healthcare") }}{% endblock %}
+
+{% block page_content %}
+{% include "healthcare/www/includes/navbar.html" %}
+
+<!-- Page Header -->
+<section class="page-header">
+	<div class="container">
+		<h1>{{ _("About Us") }}</h1>
+		<p>{{ _("Learn more about our mission, values, and commitment to your health") }}</p>
+	</div>
+</section>
+
+<!-- About Section -->
+<section class="about-section">
+	<div class="container">
+		<div class="about-content">
+			<div class="about-text">
+				<h2>{{ _("Our Mission") }}</h2>
+				<p>{{ _("At Healthcare, our mission is to provide exceptional, compassionate, and accessible healthcare services to all members of our community. We are committed to improving lives through innovative medical care, advanced technology, and a patient-centered approach.") }}</p>
+				<p>{{ _("We believe that everyone deserves access to quality healthcare, and we strive to make that a reality through our comprehensive services, expert medical professionals, and state-of-the-art facilities.") }}</p>
+			</div>
+			<div class="about-image">
+				<div class="image-placeholder">
+					<i class="fa fa-hospital-o"></i>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Values Section -->
+<section class="values-section">
+	<div class="container">
+		<h2 class="section-title">{{ _("Our Core Values") }}</h2>
+		<div class="values-grid">
+			<div class="value-card">
+				<i class="fa fa-heart"></i>
+				<h3>{{ _("Compassion") }}</h3>
+				<p>{{ _("We treat every patient with empathy, respect, and understanding, recognizing that healthcare is deeply personal.") }}</p>
+			</div>
+			<div class="value-card">
+				<i class="fa fa-star"></i>
+				<h3>{{ _("Excellence") }}</h3>
+				<p>{{ _("We maintain the highest standards of medical care through continuous learning, innovation, and quality improvement.") }}</p>
+			</div>
+			<div class="value-card">
+				<i class="fa fa-shield"></i>
+				<h3>{{ _("Integrity") }}</h3>
+				<p>{{ _("We conduct ourselves with honesty, transparency, and ethical behavior in all our interactions.") }}</p>
+			</div>
+			<div class="value-card">
+				<i class="fa fa-users"></i>
+				<h3>{{ _("Collaboration") }}</h3>
+				<p>{{ _("We work together as a team, partnering with patients, families, and colleagues to achieve the best outcomes.") }}</p>
+			</div>
+			<div class="value-card">
+				<i class="fa fa-lightbulb-o"></i>
+				<h3>{{ _("Innovation") }}</h3>
+				<p>{{ _("We embrace new technologies and methodologies to enhance patient care and improve health outcomes.") }}</p>
+			</div>
+			<div class="value-card">
+				<i class="fa fa-globe"></i>
+				<h3>{{ _("Accessibility") }}</h3>
+				<p>{{ _("We are committed to making quality healthcare accessible to everyone, regardless of background or circumstances.") }}</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Team Section -->
+<section class="team-section">
+	<div class="container">
+		<h2 class="section-title">{{ _("Our Team") }}</h2>
+		<p class="section-subtitle">{{ _("Meet the dedicated professionals who make our healthcare excellence possible") }}</p>
+		<div class="team-grid">
+			<div class="team-card">
+				<div class="team-avatar">
+					<i class="fa fa-user-md"></i>
+				</div>
+				<h3>{{ _("Dr. Sarah Johnson") }}</h3>
+				<p class="team-role">{{ _("Chief Medical Officer") }}</p>
+				<p class="team-bio">{{ _("Board-certified physician with over 20 years of experience in healthcare leadership.") }}</p>
+			</div>
+			<div class="team-card">
+				<div class="team-avatar">
+					<i class="fa fa-user-md"></i>
+				</div>
+				<h3>{{ _("Dr. Michael Chen") }}</h3>
+				<p class="team-role">{{ _("Head of Cardiology") }}</p>
+				<p class="team-bio">{{ _("Renowned cardiologist specializing in preventive cardiology and heart disease management.") }}</p>
+			</div>
+			<div class="team-card">
+				<div class="team-avatar">
+					<i class="fa fa-user-md"></i>
+				</div>
+				<h3>{{ _("Dr. Emily Rodriguez") }}</h3>
+				<p class="team-role">{{ _("Pediatric Specialist") }}</p>
+				<p class="team-bio">{{ _("Dedicated pediatrician with expertise in child development and preventive care.") }}</p>
+			</div>
+			<div class="team-card">
+				<div class="team-avatar">
+					<i class="fa fa-user-md"></i>
+				</div>
+				<h3>{{ _("Dr. James Wilson") }}</h3>
+				<p class="team-role">{{ _("Emergency Medicine") }}</p>
+				<p class="team-bio">{{ _("Experienced emergency physician providing critical care when it matters most.") }}</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+	<div class="container">
+		<div class="stats-grid">
+			<div class="stat-card">
+				<div class="stat-number">50+</div>
+				<div class="stat-label">{{ _("Expert Doctors") }}</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-number">100K+</div>
+				<div class="stat-label">{{ _("Patients Served") }}</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-number">25+</div>
+				<div class="stat-label">{{ _("Years of Excellence") }}</div>
+			</div>
+			<div class="stat-card">
+				<div class="stat-number">24/7</div>
+				<div class="stat-label">{{ _("Emergency Care") }}</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+{% include "healthcare/www/includes/footer.html" %}
+
+<style>
+	{% include "healthcare/www/includes/styles.css" %}
+	
+	.page-header {
+		background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+		color: white;
+		padding: 4rem 0;
+		text-align: center;
+	}
+
+	.page-header h1 {
+		font-size: 3rem;
+		margin-bottom: 1rem;
+	}
+
+	.page-header p {
+		font-size: 1.2rem;
+		opacity: 0.95;
+	}
+
+	.about-section {
+		padding: 5rem 0;
+	}
+
+	.about-content {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 4rem;
+		align-items: center;
+	}
+
+	.about-text h2 {
+		font-size: 2.5rem;
+		margin-bottom: 1.5rem;
+		color: var(--text-dark);
+	}
+
+	.about-text p {
+		font-size: 1.1rem;
+		line-height: 1.8;
+		color: var(--text-light);
+		margin-bottom: 1.5rem;
+	}
+
+	.about-image {
+		display: flex;
+		justify-content: center;
+	}
+
+	.image-placeholder {
+		width: 100%;
+		max-width: 400px;
+		height: 400px;
+		background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+		border-radius: 12px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.image-placeholder i {
+		font-size: 8rem;
+		color: white;
+		opacity: 0.8;
+	}
+
+	.values-section {
+		background: var(--bg-light);
+		padding: 5rem 0;
+	}
+
+	.values-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 2rem;
+		margin-top: 3rem;
+	}
+
+	.value-card {
+		background: white;
+		padding: 2rem;
+		border-radius: 12px;
+		text-align: center;
+		box-shadow: var(--shadow-md);
+		transition: transform 0.3s ease;
+	}
+
+	.value-card:hover {
+		transform: translateY(-5px);
+	}
+
+	.value-card i {
+		font-size: 3rem;
+		color: var(--primary-color);
+		margin-bottom: 1rem;
+	}
+
+	.value-card h3 {
+		font-size: 1.5rem;
+		margin-bottom: 1rem;
+		color: var(--text-dark);
+	}
+
+	.value-card p {
+		color: var(--text-light);
+		line-height: 1.6;
+	}
+
+	.team-section {
+		padding: 5rem 0;
+	}
+
+	.team-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		gap: 2rem;
+		margin-top: 3rem;
+	}
+
+	.team-card {
+		background: white;
+		padding: 2rem;
+		border-radius: 12px;
+		text-align: center;
+		box-shadow: var(--shadow-md);
+		transition: transform 0.3s ease;
+	}
+
+	.team-card:hover {
+		transform: translateY(-5px);
+	}
+
+	.team-avatar {
+		width: 120px;
+		height: 120px;
+		margin: 0 auto 1.5rem;
+		background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.team-avatar i {
+		font-size: 3rem;
+		color: white;
+	}
+
+	.team-card h3 {
+		font-size: 1.3rem;
+		margin-bottom: 0.5rem;
+		color: var(--text-dark);
+	}
+
+	.team-role {
+		color: var(--primary-color);
+		font-weight: 600;
+		margin-bottom: 1rem;
+	}
+
+	.team-bio {
+		color: var(--text-light);
+		font-size: 0.95rem;
+		line-height: 1.6;
+	}
+
+	.stats-section {
+		background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+		color: white;
+		padding: 4rem 0;
+	}
+
+	.stats-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 2rem;
+	}
+
+	.stat-card {
+		text-align: center;
+	}
+
+	.stat-number {
+		font-size: 3.5rem;
+		font-weight: 700;
+		margin-bottom: 0.5rem;
+	}
+
+	.stat-label {
+		font-size: 1.2rem;
+		opacity: 0.9;
+	}
+
+	@media (max-width: 768px) {
+		.about-content {
+			grid-template-columns: 1fr;
+		}
+
+		.page-header h1 {
+			font-size: 2rem;
+		}
+
+		.values-grid,
+		.team-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
+{% endblock %}
+

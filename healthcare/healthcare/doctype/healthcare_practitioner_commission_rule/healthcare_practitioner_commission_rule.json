@@ -1,0 +1,117 @@
+{
+ "actions": [],
+ "allow_import": 0,
+ "autoname": "hash",
+ "creation": "2025-11-19 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "service_type",
+  "priority",
+  "is_active",
+  "column_break_rule",
+  "basis",
+  "apply_on_amount",
+  "auto_wallet_entry",
+  "item_section",
+  "reference_item",
+  "column_break_amounts",
+  "flat_amount",
+  "commission_percentage",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "service_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Service Type",
+   "options": "Patient Encounter\nLab Test\nClinical Procedure\nTherapy Session\nSales Invoice\nService Request\nPatient Appointment\nOther",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "priority",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Priority",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Active"
+  },
+  {
+   "fieldname": "column_break_rule",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Percentage",
+   "fieldname": "basis",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Basis",
+   "options": "Percentage\nFlat Amount",
+   "reqd": 1
+  },
+  {
+   "default": "Bill Amount",
+   "fieldname": "apply_on_amount",
+   "fieldtype": "Select",
+   "label": "Apply On",
+   "options": "Bill Amount\nNet Receipts\nPaid Amount"
+  },
+  {
+   "default": "1",
+   "fieldname": "auto_wallet_entry",
+   "fieldtype": "Check",
+   "label": "Auto Wallet Entry"
+  },
+  {
+   "fieldname": "reference_item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "description": "Leave empty to apply to all items. Select a specific item to apply this commission rule only to that item."
+  },
+  {
+   "fieldname": "flat_amount",
+   "fieldtype": "Currency",
+   "label": "Flat Amount"
+  },
+  {
+   "fieldname": "commission_percentage",
+   "fieldtype": "Float",
+   "label": "Percentage",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_amounts",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2025-11-19 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Healthcare",
+ "name": "Healthcare Practitioner Commission Rule",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
+

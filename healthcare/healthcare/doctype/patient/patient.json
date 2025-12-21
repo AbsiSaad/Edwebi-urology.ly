@@ -11,6 +11,7 @@
  "engine": "InnoDB",
  "field_order": [
   "basic_info",
+  "create_appointment_btn",
   "naming_series",
   "first_name",
   "middle_name",
@@ -71,6 +72,11 @@
   "other_risk_factors"
  ],
  "fields": [
+    {
+        "fieldname": "create_appointment_btn",
+        "fieldtype": "Button",
+        "label": "Create Appointment"
+      },      
   {
    "fieldname": "basic_info",
    "fieldtype": "Section Break",

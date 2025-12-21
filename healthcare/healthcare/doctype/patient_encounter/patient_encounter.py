@@ -9,16 +9,48 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
-from frappe.utils import add_days, getdate
+from frappe.utils import add_days, get_link_to_form, getdate
 
 from healthcare.healthcare.utils import get_medical_codes
 
 
 class PatientEncounter(Document):
+	_action = "save"
+	def _ensure_action_flag(self):
+		if not hasattr(self, "_action") or not self._action:
+			if self.docstatus == 1:
+				self._action = "submit"
+			elif self.docstatus == 2:
+				self._action = "cancel"
+			else:
+				self._action = "save"
+
+	def save(self, *args, **kwargs):
+		self._ensure_action_flag()
+		return super().save(*args, **kwargs)
+
+	def submit(self):
+		self._action = "submit"
+		return super().submit()
+
+	def run_post_save_methods(self):
+		self._ensure_action_flag()
+		try:
+			super().run_post_save_methods()
+		except AttributeError as exc:
+			if "_action" not in str(exc):
+				raise
+			self._action = "save"
+			super().run_post_save_methods()
+
+	def before_validate(self):
+		self._ensure_action_flag()
+
 	def validate(self):
 		self.set_title()
 		self.validate_medications()
-		self.validate_therapies()
+		self.validate_sessions("therapies", "Therapies")
+		self.validate_sessions("procedure_prescription", "Clinical Procedures")
 		self.validate_observations()
 		set_codification_table_from_diagnosis(self)
 		if not self.is_new() and self.submit_orders_on_save:
@@ -35,9 +67,13 @@ class PatientEncounter(Document):
 			create_therapy_plan(self)
 		self.make_service_request()
 		self.make_medication_request()
-		# to save service_request name in prescription
-		self.save("Update")
-		self.db_set("status", "Completed")
+		# Service request names are set on child rows in make_service_request() and make_medication_request()
+		# These values will be saved automatically when the document is saved
+		# Set status directly on document - it will be saved as part of normal save process
+		self.status = "Completed"
+		# Create doctor commission entry
+		from healthcare.healthcare.scripts.encounter_commission import on_patient_encounter_submit
+		on_patient_encounter_submit(self, None)
 
 	def before_cancel(self):
 		orders = frappe.get_all("Service Request", {"order_group": self.name})
@@ -48,12 +84,28 @@ class PatientEncounter(Document):
 
 	def on_cancel(self):
 		self.db_set("status", "Cancelled")
+		# Reverse doctor commission entry
+		from healthcare.healthcare.scripts.encounter_commission import on_patient_encounter_cancel
+		on_patient_encounter_cancel(self, None)
 
 		if self.appointment:
 			frappe.db.set_value("Patient Appointment", self.appointment, "status", "Open")
 
+		therapy_plan = frappe.db.exists(
+			"Therapy Plan", {"source_doc": self.doctype, "order_group": self.name}
+		)
+		if therapy_plan:
+			therapy_status = frappe.get_cached_value("Therapy Plan", therapy_plan, "status")
+			if therapy_status in ["In Progress", "Completed"]:
+				frappe.throw(
+					_(
+						f"Cannot cancel encounter with {therapy_status} therapy plan {get_link_to_form('Therapy Plan', therapy_plan)}"
+					)
+				)
+			frappe.db.set_value("Therapy Plan", therapy_plan, "status", "Cancelled")
+
 		if self.inpatient_record and self.drug_prescription:
-			delete_ip_medication_order(self)
+			delete_ip_medication_order(self)  # TODO: delete?
 
 	def set_title(self):
 		self.title = _("{0} with {1}").format(
@@ -122,7 +174,14 @@ class PatientEncounter(Document):
 
 	def set_treatment_plan_item(self, plan_item):
 		if plan_item.type == "Clinical Procedure Template":
-			self.append("procedure_prescription", {"procedure": plan_item.template})
+			self.append(
+				"procedure_prescription",
+				{
+					"procedure": plan_item.template,
+					"no_of_sessions": plan_item.qty,
+					"interval": plan_item.interval,
+				},
+			)
 
 		if plan_item.type == "Lab Test Template":
 			self.append("lab_test_prescription", {"lab_test_code": plan_item.template})
@@ -130,7 +189,11 @@ class PatientEncounter(Document):
 		if plan_item.type == "Therapy Type":
 			self.append(
 				"therapies",
-				{"therapy_type": plan_item.template, "no_of_sessions": plan_item.qty},
+				{
+					"therapy_type": plan_item.template,
+					"no_of_sessions": plan_item.qty,
+					"interval": plan_item.interval,
+				},
 			)
 
 		if plan_item.type == "Observation Template":
@@ -153,15 +216,14 @@ class PatientEncounter(Document):
 					if medication:
 						item.medication = medication
 
-	def validate_therapies(self):
-		if not self.therapies:
+	def validate_sessions(self, table, label):
+		"""validate sessions in child tables"""
+		if not getattr(self, table, None):
 			return
 
-		for therapy in self.therapies:
-			if not therapy.no_of_sessions or therapy.no_of_sessions <= 0:
-				frappe.throw(
-					_("Row #{0} (Therapies): Number of Sessions should be at least 1").format(therapy.idx)
-				)
+		for row in getattr(self, table):
+			if not row.no_of_sessions or row.no_of_sessions <= 0:
+				frappe.throw(_(f"Row #{row.idx} ({label}): Number of Sessions should be at least 1"))
 
 	def validate_observations(self):
 		if not self.lab_test_prescription:
@@ -225,6 +287,11 @@ class PatientEncounter(Document):
 					drug.medication_request = order.name
 
 	def get_order_details(self, template_doc, line_item, medication_request=False):
+		qty = 1
+		if line_item.get("doctype") == "Drug Prescription":
+			qty = line_item.get_quantity()
+		elif line_item.get("doctype") in ["Therapy Plan Detail", "Procedure Prescription"]:
+			qty = line_item.get("no_of_sessions")
 		order = frappe.get_doc(
 			{
 				"doctype": "Medication Request" if medication_request else "Service Request",
@@ -237,17 +304,22 @@ class PatientEncounter(Document):
 				"source_doc": "Patient Encounter",
 				"order_group": self.name,
 				"sequence": line_item.get("sequence"),
+				"patient_care_type": line_item.get("patient_care_type"),
 				"intent": line_item.get("intent"),
 				"priority": line_item.get("priority"),
-				"quantity": line_item.get_quantity() if line_item.get("doctype") == "Drug Prescription" else 1,
+				"quantity": qty,
 				"dosage": line_item.get("dosage"),
 				"dosage_form": line_item.get("dosage_form"),
 				"period": line_item.get("period"),
-				"expected_date": line_item.get("expected_date"),
+				"interval": line_item.get("interval"),
+				"expected_date": line_item.get("expected_date") or line_item.get("date"),
+				"occurrence_date": line_item.get("expected_date") or line_item.get("date"),
 				"as_needed": line_item.get("as_needed"),
 				"staff_role": template_doc.get("staff_role") if template_doc else "",
 				"note": line_item.get("note"),
 				"patient_instruction": line_item.get("patient_instruction"),
+				"insurance_policy": self.insurance_policy,
+				"comment": line_item.get("comments") or line_item.get("lab_test_comment"),
 			}
 		)
 
@@ -265,7 +337,6 @@ class PatientEncounter(Document):
 			order.update(
 				{
 					"referred_to_practitioner": line_item.get("practitioner"),
-					"ordered_for": line_item.get("date"),
 				}
 			)
 
@@ -282,9 +353,6 @@ class PatientEncounter(Document):
 				{
 					"template_dt": template_doc.get("doctype"),
 					"template_dn": template_doc.get("name"),
-					# "patient_care_type": line_item.patient_care_type
-					# if line_item.patient_care_type
-					# else template_doc.get("patient_care_type"),
 				}
 			)
 
@@ -382,14 +450,19 @@ def create_therapy_plan(encounter):
 		doc = frappe.new_doc("Therapy Plan")
 		doc.patient = encounter.patient
 		doc.start_date = encounter.encounter_date
+		doc.source_doc = encounter.doctype
+		doc.order_group = encounter.name
 		for entry in encounter.therapies:
 			doc.append(
 				"therapy_plan_details",
-				{"therapy_type": entry.therapy_type, "no_of_sessions": entry.no_of_sessions},
+				{
+					"therapy_type": entry.therapy_type,
+					"no_of_sessions": entry.no_of_sessions,
+					"interval": entry.interval,
+				},
 			)
 		doc.save(ignore_permissions=True)
 		if doc.get("name"):
-			encounter.db_set("therapy_plan", doc.name)
 			frappe.msgprint(
 				_("Therapy Plan {0} created successfully.").format(frappe.bold(doc.name)), alert=True
 			)
@@ -403,20 +476,33 @@ def delete_ip_medication_order(encounter):
 
 def set_codification_table_from_diagnosis(doc):
 	if doc.diagnosis and not doc.codification_table:
-		for diag in doc.diagnosis:
-			medical_code_details = get_medical_codes("Diagnosis", diag.diagnosis)
-			if medical_code_details and len(medical_code_details) > 0:
-				for m_code in medical_code_details:
-					doc.append(
-						"codification_table",
-						{
-							"code_value": m_code.get("code_value"),
-							"code_system": m_code.get("code_system"),
-							"code": m_code.get("code"),
-							"definition": m_code.get("definition"),
-							"system": m_code.get("system"),
-						},
-					)
+		# Check if diagnosis is a list/table (not a Text Editor string)
+		if isinstance(doc.diagnosis, list):
+			for diag in doc.diagnosis:
+				# Handle both string and dict/object cases
+				if isinstance(diag, str):
+					diagnosis_name = diag
+				elif hasattr(diag, "diagnosis"):
+					diagnosis_name = diag.diagnosis
+				elif isinstance(diag, dict):
+					diagnosis_name = diag.get("diagnosis")
+				else:
+					continue
+				
+				if diagnosis_name:
+					medical_code_details = get_medical_codes("Diagnosis", diagnosis_name)
+					if medical_code_details and len(medical_code_details) > 0:
+						for m_code in medical_code_details:
+							doc.append(
+								"codification_table",
+								{
+									"code_value": m_code.get("code_value"),
+									"code_system": m_code.get("code_system"),
+									"code": m_code.get("code"),
+									"definition": m_code.get("definition"),
+									"system": m_code.get("system"),
+								},
+							)
 
 
 @frappe.whitelist()
@@ -584,6 +670,7 @@ def create_patient_referral(encounter, references):
 				"quantity": 1,
 				"order_description": ref.get("referral_note"),
 				"referred_to_practitioner": ref.get("refer_to"),
+				"insurance_policy": encounter_doc.insurance_policy,
 			}
 		)
 		order.insert(ignore_permissions=True, ignore_mandatory=True)
